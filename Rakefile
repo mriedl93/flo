@@ -36,46 +36,46 @@ task 'default' do
   # Create chain file.
   task('run/liftover.chn').invoke
 
-  # Lift over the given GFF3 files.
-  Array(CONFIG[:lift]).each do |inp|
-    outdir = "run/#{File.basename inp.ext}"
-    mkdir outdir
-
-    # Lift over the annotations from source assembly to target assembly.
-    sh "liftOver -gff #{inp} run/liftover.chn #{outdir}/lifted.gff3" \
-       " #{outdir}/unlifted.gff3"
-
-    if File.zero? "#{outdir}/lifted.gff3"
-      puts <<MSG
-liftOver's output is empty. Please make sure that annotations are in GFF3
-format and that 1st columnn of the GFF file and chromosome, scaffold, or
-contig ids in source assembly match. Either rerun flo once you have fixed
-the GFF file and the pipeline will resume from this point, or invoke
-liftOver and process the output yourself.
-MSG
-      exit!
-    end
-
-    # Clean lifted annotations.
-    sh "#{__dir__}/gff_recover.rb #{outdir}/lifted.gff3 2> #{outdir}/lifted_cleanup.log " \
-        "| gt gff3 -tidy -sort -addids -retainids - > #{outdir}/lifted_cleaned.gff " \
-        "2>> #{outdir}/lifted_cleanup.log"
-
-    if File.zero? "#{outdir}/lifted_cleaned.gff"
-      puts
-      puts "There was an error in processing liftOver's output. Please check " \
-           "#{outdir}/lifted_cleanup.log for error messages."
-      exit!
-    end
-
-    # Symlink input gff to outdir.
-    sh "ln -s #{File.expand_path inp} #{outdir}/input.gff"
-
-    # Compare input and lifted gff at CDS level.
-    sh "#{__dir__}/gff_compare.rb cds run/source.fa run/target.fa" \
-       " #{outdir}/input.gff #{outdir}/lifted_cleaned.gff"         \
-       " > #{outdir}/unmapped.txt"
-  end
+#   # Lift over the given GFF3 files.
+#   Array(CONFIG[:lift]).each do |inp|
+#     outdir = "run/#{File.basename inp.ext}"
+#     mkdir outdir
+# 
+#     # Lift over the annotations from source assembly to target assembly.
+#     sh "liftOver -gff #{inp} run/liftover.chn #{outdir}/lifted.gff3" \
+#        " #{outdir}/unlifted.gff3"
+# 
+#     if File.zero? "#{outdir}/lifted.gff3"
+#       puts <<MSG
+# liftOver's output is empty. Please make sure that annotations are in GFF3
+# format and that 1st columnn of the GFF file and chromosome, scaffold, or
+# contig ids in source assembly match. Either rerun flo once you have fixed
+# the GFF file and the pipeline will resume from this point, or invoke
+# liftOver and process the output yourself.
+# MSG
+#       exit!
+#     end
+# 
+#     # Clean lifted annotations.
+#     sh "#{__dir__}/gff_recover.rb #{outdir}/lifted.gff3 2> #{outdir}/lifted_cleanup.log " \
+#         "| gt gff3 -tidy -sort -addids -retainids - > #{outdir}/lifted_cleaned.gff " \
+#         "2>> #{outdir}/lifted_cleanup.log"
+# 
+#     if File.zero? "#{outdir}/lifted_cleaned.gff"
+#       puts
+#       puts "There was an error in processing liftOver's output. Please check " \
+#            "#{outdir}/lifted_cleanup.log for error messages."
+#       exit!
+#     end
+# 
+#     # Symlink input gff to outdir.
+#     sh "ln -s #{File.expand_path inp} #{outdir}/input.gff"
+# 
+#     # Compare input and lifted gff at CDS level.
+#     sh "#{__dir__}/gff_compare.rb cds run/source.fa run/target.fa" \
+#        " #{outdir}/input.gff #{outdir}/lifted_cleaned.gff"         \
+#        " > #{outdir}/unmapped.txt"
+#   end
 end
 
 # Task to create chain file.
